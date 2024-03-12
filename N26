@@ -1,0 +1,102 @@
+// ==UserScript==
+// @name         N26 Balance Adjuster
+// @namespace    http://tampermonkey.net/
+// @version      1
+// @description  Adjust your N26 balance for hypothetical calculations
+// @author       github.com/gus5900000
+// @match        https://app.n26.com/transactions
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    const balanceElement = document.querySelector('h3.jit7bv0._1tige6hhy._1tige6h5c._1tige6h5o._1tige6h80._1tige6hid span'); // If it doesn't work, change the selector according to yours.
+
+    if (balanceElement) {
+        const input = document.createElement('input');
+        input.placeholder = 'Montant à soustraire';
+        input.style.marginTop = '10px';
+        input.style.border = '1px solid #ccc';
+        input.style.padding = '5px';
+        input.style.borderRadius = '5px';
+        input.style.fontSize = '14px';
+        input.style.backgroundColor = 'rgb(45,45,45)'
+        input.style.color = '#FFFFFF';
+        input.classList.add('custom-script-element');
+
+        const button = document.createElement('button');
+        button.textContent = 'Calculer';
+        button.style.marginLeft = '5px';
+        button.style.backgroundColor = '#333333';
+        button.style.color = '#FFFFFF';
+        button.style.border = 'none';
+        button.style.padding = '5px 10px';
+        button.style.borderRadius = '5px';
+        button.style.cursor = 'pointer';
+        button.style.outline = 'none';
+        button.style.fontWeight = 'bold';
+        button.style.fontSize = '14px';
+        button.classList.add('custom-script-element');
+
+
+        button.onmouseover = function() {
+            this.style.opacity = '0.85';
+        };
+
+
+        button.onmouseout = function() {
+            this.style.opacity = '1';
+        };
+
+
+        balanceElement.parentNode.insertBefore(input, balanceElement.nextSibling);
+        balanceElement.parentNode.insertBefore(button, input.nextSibling);
+
+        button.addEventListener('click', function() {
+            const amountToSubtract = parseFloat(input.value);
+            if (!isNaN(amountToSubtract)) {
+                let currentBalanceText = balanceElement.textContent.replace(/\u00A0/g, '').replace(',', '.').replace(' €', '');
+                let currentBalance = parseFloat(currentBalanceText);
+                if (!isNaN(currentBalance)) {
+                    const newBalance = currentBalance - amountToSubtract;
+                    balanceElement.textContent = `${newBalance.toFixed(2).replace('.', ',')}\u00A0€`;
+                }
+            } else {
+                alert('Veuillez entrer un nombre valide.');
+            }
+            input.value = '';
+        });
+    }
+})();
+
+(function() {
+    'use strict';
+
+    const toolbar = document.querySelector('ul.jit7bv0._1tige6hg8._1tige6hge'); // If it doesn't work, change the selector according to yours.
+
+    if (toolbar) {
+        const toggleButton = document.createElement('li');
+        toggleButton.innerHTML = '<button class="toggle-script">ON</button>';
+
+        const buttonStyle = toggleButton.querySelector('.toggle-script');
+        buttonStyle.style.backgroundColor = 'rgb(45,45,45)';
+        buttonStyle.style.color = '#fff';
+        buttonStyle.style.border = 'none';
+        buttonStyle.style.padding = '10px';
+        buttonStyle.style.borderRadius = '5px';
+        buttonStyle.style.marginLeft = '10px';
+
+        toolbar.appendChild(toggleButton);
+
+        let scriptEnabled = true;
+        const toggleScriptDisplay = () => {
+            const elementsToToggle = document.querySelectorAll('.custom-script-element');
+            elementsToToggle.forEach(element => {
+                element.style.display = scriptEnabled ? 'none' : '';
+            });
+            scriptEnabled = !scriptEnabled;
+            buttonStyle.textContent = scriptEnabled ? 'ON' : 'OFF';
+        };
+        toggleButton.addEventListener('click', toggleScriptDisplay);
+    }
+})();
